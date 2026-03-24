@@ -52,6 +52,11 @@ const pages = await pariette.canvas.list({ page: 1, per_page: 10 })
 // Tek sayfa getir
 const page = await pariette.canvas.getPublic('about-us')
 
+// Query parametreleri ile getir (ornegin: tip filtresi)
+const category = await pariette.canvas.getPublic('otel', {
+  type: 'productCategory'
+})
+
 // Yeni sayfa olustur
 await pariette.canvas.create({
   title: 'Blog Yazisi',
@@ -122,12 +127,19 @@ const filtered = await pariette.collections.getItems(categoryId, {
 ## Urunler (Products)
 
 ```typescript
-// Urun listesi (filtreli)
+// Urun listesi - admin (filtreli)
 const products = await pariette.products.list({
   page: 1,
   search: 'bebek arabasi',
   min_price: 100,
   max_price: 5000
+})
+
+// Urun listesi - public (misafir kullanicilar icin)
+const publicProducts = await pariette.products.listPublic({
+  paginate: 20,
+  orderBy: 'id',
+  sort: 'desc'
 })
 
 // Urun detayi
