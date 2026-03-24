@@ -6,8 +6,8 @@ export interface ParietteConfig {
 }
 
 export const API_URLS = {
-  production: 'https://live.pariette.com/api',
-  test: 'https://dev.pariette.com/api',
+  production: 'https://live.pariette.com',
+  test: 'https://dev.pariette.com',
 } as const
 
 export interface ApiResponse<T = any> {

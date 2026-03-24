@@ -12,9 +12,14 @@ import {
 import { ApiResponse, PaginatedResponse } from '../types/common'
 
 export class ProductModule extends BaseModule {
-  /** Urun listesi */
+  /** Urun listesi (admin) */
   async list(params?: ProductSearchParams): Promise<PaginatedResponse<Product>> {
     return this.client.get('/api/products', params)
+  }
+
+  /** Public urun listesi */
+  async listPublic(params?: ProductSearchParams): Promise<PaginatedResponse<Product>> {
+    return this.client.get('/api/public/products', params)
   }
 
   /** Public urun detayi (slug ile) */
