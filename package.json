@@ -1,0 +1,49 @@
+{
+  "name": "@pariette/sdk",
+  "version": "1.0.0",
+  "description": "Pariette Platform SDK - CMS, E-Commerce & SaaS entegrasyonu",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "pariette",
+    "sdk",
+    "cms",
+    "ecommerce",
+    "saas",
+    "api"
+  ],
+  "author": "Pariette Inc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pariette-Inc/pariette.sdk.git"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
