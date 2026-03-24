@@ -25,8 +25,8 @@ export class CanvasModule extends BaseModule {
   }
 
   /** Public canvas getir (slug ile) */
-  async getPublic(slug: string): Promise<Canvas> {
-    return this.client.get(`/api/public/canvas/${slug}`)
+  async getPublic(slug: string, params?: Record<string, any>): Promise<Canvas> {
+    return this.client.get(`/api/public/canvas/${slug}`, params)
   }
 
   /** Yeni canvas olustur */
