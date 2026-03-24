@@ -14,11 +14,15 @@ npm install @pariette/sdk
 import { Pariette } from '@pariette/sdk'
 
 const pariette = new Pariette({
-  apiUrl: 'https://api.pariette.com',
-  token: 'YOUR_ENVIRONMENT_TOKEN',
-  locale: 'tr'
+  mode: 'production',       // 'production' veya 'test'
+  token: 'YOUR_ENV_TOKEN',  // Environment token
+  locale: 'tr'              // Opsiyonel
 })
 ```
+
+> **Not:** API URL'leri sabittir ve degistirilemez:
+> - **Production:** `live.pariette.com/api`
+> - **Test:** `dev.pariette.com/api`
 
 ## Kimlik Dogrulama (Auth)
 
@@ -67,6 +71,52 @@ await pariette.canvas.update('about-us', {
 
 // Sayfa sil
 await pariette.canvas.delete(123)
+```
+
+## Koleksiyonlar & Kategoriler (Collections)
+
+Sayfa tipi `category`, `productCategory` veya `collection` oldugunda, o sayfanin id'si ile iliskili icerikler cekilir.
+
+```typescript
+// 1. Kategori bilgisini al
+const category = await pariette.collections.getCategory('haberler')
+
+// 2. O kategoriye ait icerikleri cek
+const news = await pariette.collections.getItems(category.data.id, {
+  type: 'news',
+  status: 1,
+  paginate: 10,
+  page: 1
+})
+
+// Urun kategorisi icin
+const prodCategory = await pariette.collections.getCategory('bebek-arabalari', 'productCategory')
+const products = await pariette.collections.getProducts(prodCategory.data.id, {
+  paginate: 20,
+  orderBy: 'id',
+  sort: 'desc'
+})
+
+// One cikan urunler
+const featured = await pariette.collections.getFeaturedProducts(prodCategory.data.id, {
+  paginate: 10
+})
+
+// Tum kategorileri listele
+const categories = await pariette.collections.listCategories({ limit: 100 })
+const productCategories = await pariette.collections.listProductCategories({
+  limit: 100,
+  orderBy: 'order',
+  sort: 'asc'
+})
+
+// Tarih filtreli koleksiyon
+const filtered = await pariette.collections.getItems(categoryId, {
+  type: 'news',
+  start: '2026-01-01',
+  end: '2026-03-31',
+  paginate: 20
+})
 ```
 
 ## Urunler (Products)
@@ -162,23 +212,29 @@ await pariette.basket.checkout(basketId, {
 })
 ```
 
-## Ortam Yonetimi (Environment)
+## Dosya Yonetimi (Storage)
 
 ```typescript
-// Ortam bilgisi
-const env = await pariette.environments.get('TOKEN')
-
-// Tasarim guncelle
-await pariette.environments.updateDesign('TOKEN', {
-  primary_color: '#FF6B35',
-  logo: 'https://cdn.example.com/logo.png'
+// Tek resim yukle
+const image = await pariette.storage.uploadImage(file, (progress) => {
+  console.log(`Yukleniyor: ${progress}%`)
 })
 
-// Takim yonetimi
-const members = await pariette.environments.team.list('TOKEN')
-await pariette.environments.team.invite('TOKEN', {
-  email: 'yeni@kisi.com',
-  role: 'editor'
+// Toplu resim yukle (max 10 dosya, her biri max 5MB)
+const images = await pariette.storage.uploadImages(files, {
+  convert: 'webp',          // WebP'ye donustur
+  quality: 85,               // Kalite (0-100)
+  canvas_id: 123,            // Otomatik canvas'a bagla
+  product_id: 456            // Otomatik urune bagla
+}, (progress) => {
+  console.log(`Yukleniyor: ${progress}%`)
+})
+
+// Galeri olustur
+await pariette.storage.galleries.create({ title: 'Urun Resimleri' })
+await pariette.storage.galleries.addImage({
+  gallery_id: 1,
+  image_id: image.data.id
 })
 ```
 
@@ -243,22 +299,6 @@ await pariette.inventory.transfers.create('TOKEN', {
 })
 ```
 
-## Dosya Yonetimi (Storage)
-
-```typescript
-// Resim yukle
-const image = await pariette.storage.uploadImage(file, (progress) => {
-  console.log(`Yukleniyor: ${progress}%`)
-})
-
-// Galeri olustur
-await pariette.storage.galleries.create({ title: 'Urun Resimleri' })
-await pariette.storage.galleries.addImage({
-  gallery_id: 1,
-  image_id: image.data.id
-})
-```
-
 ## Navigasyon
 
 ```typescript
@@ -304,16 +344,14 @@ try {
 
 ```typescript
 const pariette = new Pariette({
-  apiUrl: 'https://api.pariette.com',  // API base URL (zorunlu)
-  token: 'ENV_TOKEN',                   // Environment token (zorunlu)
-  locale: 'tr',                         // Dil (opsiyonel, varsayilan: yok)
-  consoleToken: 'CONSOLE_TOKEN',        // Console token (opsiyonel)
-  timeout: 30000                        // Timeout ms (opsiyonel, varsayilan: 30000)
+  mode: 'production',  // 'production' | 'test' (zorunlu)
+  token: 'ENV_TOKEN',  // Environment token (zorunlu)
+  locale: 'tr',        // Dil (opsiyonel)
+  timeout: 30000       // Timeout ms (opsiyonel, varsayilan: 30000)
 })
 
 // Runtime'da degistir
 pariette.setLocale('en')
-pariette.setConsoleToken('NEW_TOKEN')
 pariette.setAuthToken('jwt-token')
 ```
 
@@ -323,9 +361,10 @@ pariette.setAuthToken('jwt-token')
 |-------|--------|----------|
 | Auth | `pariette.auth` | Kimlik dogrulama, kayit, 2FA |
 | Canvas | `pariette.canvas` | CMS sayfa yonetimi |
+| Collections | `pariette.collections` | Kategori & koleksiyon sistemi |
 | Products | `pariette.products` | Urun CRUD, varyant, fiyat |
 | Orders | `pariette.orders` | Siparis yonetimi, kargo, iade |
-| Environments | `pariette.environments` | Ortam ayarlari, takim |
+| Environments | `pariette.environments` | Ortam bilgisi, istatistikler |
 | Subscriptions | `pariette.subscriptions` | Abonelik, faturalama |
 | Inventory | `pariette.inventory` | Stok yonetimi, transfer |
 | Storage | `pariette.storage` | Dosya/resim yukleme, galeri |

@@ -13,6 +13,7 @@ import { NavigationModule } from './modules/navigation'
 import { AttributeModule } from './modules/attributes'
 import { UserModule } from './modules/users'
 import { NotificationModule } from './modules/notifications'
+import { CollectionModule } from './modules/collections'
 
 export class Pariette {
   private client: ParietteClient
@@ -30,6 +31,7 @@ export class Pariette {
   readonly attributes: AttributeModule
   readonly users: UserModule
   readonly notifications: NotificationModule
+  readonly collections: CollectionModule
 
   constructor(config: ParietteConfig) {
     this.client = new ParietteClient(config)
@@ -47,6 +49,7 @@ export class Pariette {
     this.attributes = new AttributeModule(this.client)
     this.users = new UserModule(this.client)
     this.notifications = new NotificationModule(this.client)
+    this.collections = new CollectionModule(this.client)
   }
 
   /** JWT token'i manuel olarak set et */
@@ -62,10 +65,5 @@ export class Pariette {
   /** Dil degistir */
   setLocale(locale: string): void {
     this.client.setLocale(locale)
-  }
-
-  /** Console token degistir */
-  setConsoleToken(token: string): void {
-    this.client.setConsoleToken(token)
   }
 }

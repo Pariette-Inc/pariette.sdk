@@ -1,19 +1,20 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { ParietteConfig, ApiResponse, ParietteError } from './types/common'
+import { ParietteConfig, API_URLS, ParietteError } from './types/common'
 
 export class ParietteClient {
   private http: AxiosInstance
   private authToken: string | null = null
 
   constructor(private config: ParietteConfig) {
+    const baseURL = API_URLS[config.mode]
+
     this.http = axios.create({
-      baseURL: config.apiUrl.replace(/\/+$/, ''),
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         ParietteToken: config.token,
         ...(config.locale ? { Locale: config.locale } : {}),
-        ...(config.consoleToken ? { ConsoleToken: config.consoleToken } : {}),
       },
       timeout: config.timeout || 30000,
     })
@@ -49,10 +50,6 @@ export class ParietteClient {
 
   setLocale(locale: string): void {
     this.http.defaults.headers.common['Locale'] = locale
-  }
-
-  setConsoleToken(token: string): void {
-    this.http.defaults.headers.common['ConsoleToken'] = token
   }
 
   async get<T = any>(url: string, params?: Record<string, any>): Promise<T> {

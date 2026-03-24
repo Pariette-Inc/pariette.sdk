@@ -1,10 +1,14 @@
 export interface ParietteConfig {
-  apiUrl: string
+  mode: 'production' | 'test'
   token: string
   locale?: string
-  consoleToken?: string
   timeout?: number
 }
+
+export const API_URLS = {
+  production: 'https://live.pariette.com/api',
+  test: 'https://dev.pariette.com/api',
+} as const
 
 export interface ApiResponse<T = any> {
   status: boolean

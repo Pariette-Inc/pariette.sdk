@@ -4,6 +4,9 @@ import { ApiResponse, ListParams, PaginatedResponse } from '../types/common'
 export interface StorageImage {
   id: number
   url: string
+  file_name?: string
+  optimized_path?: string
+  path?: string
   alt?: string
   width?: number
   height?: number
@@ -39,15 +42,53 @@ export interface GalleryImage {
   image?: StorageImage
 }
 
+export interface UploadImagesOptions {
+  /** WebP formatina donustur */
+  convert?: 'webp'
+  /** Resim kalitesi (0-100, varsayilan: 100) */
+  quality?: number
+  /** TinyPNG ile ek optimizasyon */
+  compress?: 'tinypng'
+  /** Otomatik canvas'a bagla */
+  canvas_id?: number
+  /** Otomatik urune bagla */
+  product_id?: number
+}
+
 export class StorageModule extends BaseModule {
   /** Tek resim yukle */
   async uploadImage(file: any, onProgress?: (p: number) => void): Promise<ApiResponse<StorageImage>> {
     return this.client.upload('/api/storage-image', file, 'file', undefined, onProgress)
   }
 
-  /** Coklu resim yukle */
-  async uploadImages(files: any[], onProgress?: (p: number) => void): Promise<ApiResponse<StorageImage[]>> {
-    return this.client.uploadMultiple('/api/storage-images', files, 'files[]', undefined, onProgress)
+  /**
+   * Toplu resim yukle (max 10 dosya, her biri max 5MB)
+   *
+   * Ornek:
+   *   const result = await pariette.storage.uploadImages(files, {
+   *     convert: 'webp',
+   *     canvas_id: 123
+   *   })
+   */
+  async uploadImages(
+    files: any[],
+    options?: UploadImagesOptions,
+    onProgress?: (p: number) => void
+  ): Promise<ApiResponse<StorageImage[]>> {
+    const extraFields: Record<string, any> = {}
+    if (options?.convert) extraFields.convert = options.convert
+    if (options?.quality !== undefined) extraFields.quality = options.quality
+    if (options?.compress) extraFields.compress = options.compress
+    if (options?.canvas_id) extraFields.canvas_id = options.canvas_id
+    if (options?.product_id) extraFields.product_id = options.product_id
+
+    return this.client.uploadMultiple(
+      '/api/storage-images',
+      files,
+      'files[]',
+      Object.keys(extraFields).length > 0 ? extraFields : undefined,
+      onProgress
+    )
   }
 
   /** Dosya yukle */
