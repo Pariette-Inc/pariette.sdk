@@ -1,93 +1,187 @@
 export interface Order {
   id: number
   order_number: string
-  status: string
-  user_id: number
   environment_id: number
-  subtotal: number
-  tax: number
-  shipping_cost: number
-  discount: number
-  total: number
+  basket_id?: number
+  user_id?: number
+  session_id?: string
+  status: OrderStatus
   currency: string
-  payment_status?: string
+  subtotal: number
+  discount_amount: number
+  tax_amount: number
+  shipping_amount: number
+  total_amount: number
   payment_method?: string
-  shipping_method?: string
-  tracking_number?: string
-  notes?: string
-  billing_address?: OrderAddress
   shipping_address?: OrderAddress
+  billing_address?: OrderAddress
+  carrier_id?: number
+  carrier_name?: string
+  tracking_number?: string
+  tracking_link?: string
+  coupon_code?: string
+  customer_note?: string
+  seller_note?: string
+  invoice_path?: string
+  shipped_at?: string
+  delivered_at?: string
+  cancelled_at?: string
+  cancellation_reason?: string
   created_at: string
   updated_at: string
+  // Relations
   items?: OrderItem[]
-  timeline?: OrderTimeline[]
+  carrier?: Carrier
+  payment?: any
+  refund?: Refund
+  timelines?: OrderTimeline[]
+  messages?: OrderMessage[]
 }
 
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded'
+
 export interface OrderItem {
-  id: number
-  order_id: number
   product_id: number
-  variant_id?: number
-  title: string
-  sku?: string
-  quantity: number
-  unit_price: number
-  total: number
+  name: string
   image?: string
-  options?: Record<string, string>
+  sku?: string
+  unit_price: number
+  quantity: number
+  subtotal: number
+  plan?: string
+  target_env?: string
 }
 
 export interface OrderAddress {
+  id?: number
+  title?: string
   name: string
+  surname?: string
   phone?: string
-  address_line_1: string
-  address_line_2?: string
-  city: string
-  state?: string
-  postal_code: string
   country: string
+  city: string
+  district?: string
+  address_detail: string
+  zip_code?: string
+  is_corporate?: boolean
+  company_name?: string
+  tax_office?: string
+  tax_number?: string
 }
 
 export interface OrderTimeline {
   id: number
   order_id: number
-  type: string
-  title: string
-  description?: string
-  user_id?: number
+  status: string
+  note?: string
   created_at: string
 }
 
-export interface OrderShipment {
+export interface OrderMessage {
   id: number
   order_id: number
-  carrier: string
-  tracking_number: string
+  user_id?: number
+  message: string
+  is_seller: boolean
+  created_at: string
+  user?: { id: number; name: string }
+}
+
+export interface Carrier {
+  id: number
+  environment_id: number
+  name: string
+  code?: string
+  tracking_url?: string
+  pricing_type: 'fixed' | 'per_desi' | 'per_kg'
+  base_price: number
+  per_unit_price: number
+  free_shipping_threshold?: number
+  is_active: boolean
+  sort_order: number
+}
+
+export interface PaymentGateway {
+  id: number
+  environment_id: number
+  provider: string
+  label: string
+  config?: Record<string, any>
+  is_active: boolean
+  is_default: boolean
+  is_online: boolean
+  sort_order: number
+  provider_label?: string
+}
+
+export interface Refund {
+  id: number
+  order_id: number
+  amount: number
   status: string
-  shipped_at?: string
-  delivered_at?: string
+  type: 'full' | 'partial'
+  reason?: string
+  admin_note?: string
+  customer_note?: string
+  created_at: string
+}
+
+export interface OrderStats {
+  total: number
+  pending: number
+  confirmed: number
+  processing: number
+  shipped: number
+  delivered: number
+  cancelled: number
+  refunded: number
+  revenue: {
+    today: number
+    month: number
+    total: number
+  }
+}
+
+export interface CheckoutOptions {
+  payment_methods: Pick<PaymentGateway, 'id' | 'provider' | 'label' | 'is_default' | 'is_online'>[]
+  carriers: Pick<Carrier, 'id' | 'name' | 'pricing_type' | 'base_price' | 'free_shipping_threshold'>[]
+}
+
+export interface CheckoutRequest {
+  basket_id: number
+  payment_method: string
+  shipping_address_id?: number
+  shipping_address?: OrderAddress
+  billing_address_id?: number
+  billing_address?: OrderAddress
+  carrier_id?: number
+  customer_note?: string
+  // Misafir sipariş
+  guest_name?: string
+  guest_email?: string
+  guest_phone?: string
 }
 
 export interface UpdateOrderStatusRequest {
-  status: string
+  status: OrderStatus
   note?: string
 }
 
-export interface CreateShipmentRequest {
-  carrier: string
-  tracking_number: string
-  items?: number[]
+export interface UpdateShippingRequest {
+  carrier_id?: number
+  carrier_name?: string
+  tracking_number?: string
 }
 
 export interface RefundRequest {
   amount?: number
   reason?: string
-  items?: { item_id: number; quantity: number }[]
-}
-
-export interface OrderExportParams {
-  format?: 'csv' | 'xlsx'
-  status?: string
-  date_from?: string
-  date_to?: string
+  note?: string
 }

@@ -1,152 +1,144 @@
 import { BaseModule } from './base'
 import {
   Order,
-  OrderItem,
+  OrderStats,
   OrderTimeline,
   UpdateOrderStatusRequest,
-  CreateShipmentRequest,
+  UpdateShippingRequest,
   RefundRequest,
-  OrderExportParams,
+  Carrier,
+  PaymentGateway,
 } from '../types/order'
 import { ApiResponse, ListParams, PaginatedResponse } from '../types/common'
 
-export class OrderModule extends BaseModule {
-  /** Siparis listesi */
-  async list(params?: ListParams): Promise<PaginatedResponse<Order>> {
-    return this.client.get('/api/orders', params)
+/**
+ * SellerOrderModule — Satıcı (environment) sipariş yönetimi
+ *
+ * Tüm metodlar ConsoleToken / EnvToken gerektirir.
+ */
+export class SellerOrderModule extends BaseModule {
+  /** Sipariş listesi */
+  async list(params?: ListParams & { status?: string; search?: string; date_from?: string; date_to?: string }): Promise<PaginatedResponse<Order>> {
+    return this.client.get('/api/console/orders', params)
   }
 
-  /** Siparis detayi */
-  async get(id: number): Promise<Order> {
-    return this.client.get(`/api/orders/${id}`)
+  /** Sipariş istatistikleri */
+  async stats(): Promise<ApiResponse<OrderStats>> {
+    return this.client.get('/api/console/orders/stats')
   }
 
-  /** Siparis istatistikleri */
-  async getStats(): Promise<ApiResponse> {
-    return this.client.get('/api/orders/stats')
+  /** Sipariş detayı */
+  async get(id: number): Promise<ApiResponse<Order>> {
+    return this.client.get(`/api/console/orders/${id}`)
   }
 
-  /** Siparis durumunu guncelle */
-  async updateStatus(id: number, data: UpdateOrderStatusRequest): Promise<ApiResponse> {
-    return this.client.patch(`/api/orders/${id}/status`, data)
+  /** Durum güncelle */
+  async updateStatus(id: number, data: UpdateOrderStatusRequest): Promise<ApiResponse<Order>> {
+    return this.client.put(`/api/console/orders/${id}/status`, data)
   }
 
-  /** Siparis guncelle */
-  async update(id: number, data: Partial<Order>): Promise<ApiResponse> {
-    return this.client.put(`/api/orders/${id}`, data)
+  /** Kargo bilgisi gir (shipped durumuna geçer) */
+  async updateShipping(id: number, data: UpdateShippingRequest): Promise<ApiResponse<Order>> {
+    return this.client.put(`/api/console/orders/${id}/shipping`, data)
   }
 
-  /** Siparis sil */
-  async delete(id: number): Promise<ApiResponse> {
-    return this.client.delete(`/api/orders/${id}`)
+  /** Müşteriye mesaj gönder */
+  async sendMessage(id: number, message: string): Promise<ApiResponse> {
+    return this.client.post(`/api/console/orders/${id}/message`, { message })
   }
 
-  // --- Items ---
-
-  /** Siparis kalemi ekle */
-  async addItem(orderId: number, data: Partial<OrderItem>): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/items`, data)
-  }
-
-  /** Siparis kalemi guncelle */
-  async updateItem(orderId: number, itemId: number, data: Partial<OrderItem>): Promise<ApiResponse> {
-    return this.client.put(`/api/orders/${orderId}/items/${itemId}`, data)
-  }
-
-  /** Siparis kalemi sil */
-  async removeItem(orderId: number, itemId: number): Promise<ApiResponse> {
-    return this.client.delete(`/api/orders/${orderId}/items/${itemId}`)
-  }
-
-  /** Siparis kalemi stok durumunu guncelle */
-  async updateItemStockStatus(orderId: number, itemId: number, data: { status: string }): Promise<ApiResponse> {
-    return this.client.patch(`/api/orders/${orderId}/items/${itemId}/stock-status`, data)
-  }
-
-  // --- Shipping ---
-
-  /** Kargo bilgisi guncelle */
-  async updateShipping(orderId: number, data: Record<string, any>): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/shipping`, data)
-  }
-
-  /** Gonderim olustur */
-  async createShipment(orderId: number, data: CreateShipmentRequest): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/shipments`, data)
-  }
-
-  /** Depo ata */
-  async assignWarehouse(orderId: number, data: { warehouse_id: number }): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/assign-warehouse`, data)
-  }
-
-  /** Kargo firmalari */
-  async getCarriers(): Promise<ApiResponse> {
-    return this.client.get('/api/orders/carriers')
-  }
-
-  // --- Refund ---
-
-  /** Iade islemi */
-  async refund(orderId: number, data: RefundRequest): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/refund`, data)
-  }
-
-  // --- Timeline ---
-
-  /** Siparis zaman cizelgesi */
-  async timeline(orderId: number): Promise<ApiResponse<OrderTimeline[]>> {
-    return this.client.get(`/api/orders/${orderId}/timeline`)
-  }
-
-  /** Siparis mesaji gonder */
-  async sendMessage(orderId: number, data: { message: string }): Promise<ApiResponse> {
-    return this.client.post(`/api/orders/${orderId}/message`, data)
-  }
-
-  // --- Documents ---
-
-  /** Fatura yukle */
-  async uploadInvoice(orderId: number, file: any): Promise<ApiResponse> {
-    return this.client.upload(`/api/orders/${orderId}/invoice`, file)
-  }
-
-  /** Fatura indir */
-  async getInvoice(orderId: number): Promise<ApiResponse> {
-    return this.client.get(`/api/orders/${orderId}/invoice`)
-  }
-
-  /** Makbuz indir */
-  async getReceipt(orderId: number): Promise<ApiResponse> {
-    return this.client.get(`/api/orders/${orderId}/receipt`)
-  }
-
-  // --- Filtering ---
-
-  /** Magazaya gore siparisler */
-  async byShop(shopId: number, params?: ListParams): Promise<PaginatedResponse<Order>> {
-    return this.client.get(`/api/orders/by-shop/${shopId}`, params)
-  }
-
-  /** Markaya gore siparisler */
-  async byBrand(brandId: number, params?: ListParams): Promise<PaginatedResponse<Order>> {
-    return this.client.get(`/api/orders/by-brand/${brandId}`, params)
-  }
-
-  /** Depoya gore siparisler */
-  async byWarehouse(warehouseId: number, params?: ListParams): Promise<PaginatedResponse<Order>> {
-    return this.client.get(`/api/orders/by-warehouse/${warehouseId}`, params)
-  }
-
-  // --- Export & Reports ---
-
-  /** Siparis disa aktar */
-  async export(params?: OrderExportParams): Promise<ApiResponse> {
-    return this.client.get('/api/orders/export', params)
-  }
-
-  /** Satis raporu */
-  async salesReport(params?: Record<string, any>): Promise<ApiResponse> {
-    return this.client.get('/api/shopping/reports/sales', params)
+  /** İade başlat */
+  async refund(id: number, data: RefundRequest): Promise<ApiResponse> {
+    return this.client.post(`/api/console/orders/${id}/refund`, data)
   }
 }
+
+/**
+ * CustomerOrderModule — Müşteri sipariş geçmişi
+ */
+export class CustomerOrderModule extends BaseModule {
+  /** Kendi siparişleri */
+  async list(params?: ListParams & { status?: string }): Promise<PaginatedResponse<Order>> {
+    return this.client.get('/api/my-orders', params)
+  }
+
+  /** Sipariş detayı */
+  async get(id: number): Promise<ApiResponse<Order>> {
+    return this.client.get(`/api/my-orders/${id}`)
+  }
+
+  /** Sipariş iptal talebi */
+  async cancel(id: number, reason?: string): Promise<ApiResponse<Order>> {
+    return this.client.post(`/api/my-orders/${id}/cancel`, { reason })
+  }
+
+  /** Satıcıya mesaj gönder */
+  async sendMessage(id: number, message: string): Promise<ApiResponse> {
+    return this.client.post(`/api/my-orders/${id}/message`, { message })
+  }
+}
+
+/**
+ * CarrierModule — Kargo firması yönetimi (satıcı)
+ */
+export class CarrierModule extends BaseModule {
+  /** Kargo firmaları listesi (console) */
+  async list(): Promise<ApiResponse<Carrier[]>> {
+    return this.client.get('/api/console/carriers')
+  }
+
+  /** Public kargo listesi (checkout için) */
+  async publicList(): Promise<ApiResponse<Pick<Carrier, 'id' | 'name' | 'pricing_type' | 'base_price' | 'free_shipping_threshold'>[]>> {
+    return this.client.get('/api/shopping/carriers')
+  }
+
+  /** Kargo firması ekle */
+  async create(data: Partial<Carrier>): Promise<ApiResponse<Carrier>> {
+    return this.client.post('/api/console/carriers', data)
+  }
+
+  /** Güncelle */
+  async update(id: number, data: Partial<Carrier>): Promise<ApiResponse<Carrier>> {
+    return this.client.put(`/api/console/carriers/${id}`, data)
+  }
+
+  /** Sil */
+  async delete(id: number): Promise<ApiResponse> {
+    return this.client.delete(`/api/console/carriers/${id}`)
+  }
+}
+
+/**
+ * PaymentGatewayModule — Ödeme yöntemi yönetimi (satıcı)
+ */
+export class PaymentGatewayModule extends BaseModule {
+  /** Desteklenen provider listesi */
+  async providers(): Promise<ApiResponse<{ provider: string; label: string }[]>> {
+    return this.client.get('/api/console/payment-gateways/providers')
+  }
+
+  /** Aktif ödeme yöntemleri */
+  async list(): Promise<ApiResponse<PaymentGateway[]>> {
+    return this.client.get('/api/console/payment-gateways')
+  }
+
+  /** Yeni ödeme yöntemi ekle / etkinleştir */
+  async create(data: Partial<PaymentGateway>): Promise<ApiResponse<PaymentGateway>> {
+    return this.client.post('/api/console/payment-gateways', data)
+  }
+
+  /** Güncelle */
+  async update(id: number, data: Partial<PaymentGateway>): Promise<ApiResponse<PaymentGateway>> {
+    return this.client.put(`/api/console/payment-gateways/${id}`, data)
+  }
+
+  /** Sil */
+  async delete(id: number): Promise<ApiResponse> {
+    return this.client.delete(`/api/console/payment-gateways/${id}`)
+  }
+}
+
+/**
+ * @deprecated Kullanılmıyor. Yeni sistemde SellerOrderModule kullan.
+ */
+export class OrderModule extends SellerOrderModule {}
