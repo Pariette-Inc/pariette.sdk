@@ -35,6 +35,7 @@ export class ParietteClient {
     )
   }
 
+  /** JWT token set/clear — auth modülü login/logout'ta otomatik çağırır */
   setAuthToken(token: string | null): void {
     this.authToken = token
     if (token) {
@@ -48,6 +49,38 @@ export class ParietteClient {
     return this.authToken
   }
 
+  /**
+   * ConsoleToken — environment'a özel admin işlemleri için gereklidir.
+   * Satıcı paneli (console) endpoint'leri bu token'ı zorunlu kılar.
+   *
+   * @example
+   *   pariette.setConsoleToken(env.token)
+   *   await pariette.orders.list()
+   */
+  setConsoleToken(token: string | null): void {
+    if (token) {
+      this.http.defaults.headers.common['ConsoleToken'] = token
+    } else {
+      delete this.http.defaults.headers.common['ConsoleToken']
+    }
+  }
+
+  /**
+   * X-Guest-Id — misafir sepet işlemleri için session ID.
+   * Misafir müşteri checkout akışında cart endpoint'lerine gönderilir.
+   *
+   * @example
+   *   pariette.setGuestId(sessionStorage.getItem('guest_id'))
+   */
+  setGuestId(guestId: string | null): void {
+    if (guestId) {
+      this.http.defaults.headers.common['X-Guest-Id'] = guestId
+    } else {
+      delete this.http.defaults.headers.common['X-Guest-Id']
+    }
+  }
+
+  /** İstek locale'ini güncelle (tr | en | de | fr) */
   setLocale(locale: string): void {
     this.http.defaults.headers.common['Locale'] = locale
   }

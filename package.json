@@ -1,7 +1,7 @@
 {
   "name": "@pariette/sdk",
-  "version": "1.1.3",
-  "description": "Pariette Platform SDK - CMS, E-Commerce & SaaS entegrasyonu",
+  "version": "1.2.0",
+  "description": "Pariette Platform SDK — Multi-tenant headless CMS, E-Commerce & SaaS API client for Node.js and browsers",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -27,14 +27,35 @@
     "sdk",
     "cms",
     "ecommerce",
+    "e-commerce",
     "saas",
-    "api"
+    "api",
+    "multi-tenant",
+    "headless",
+    "headless-cms",
+    "headless-commerce",
+    "cart",
+    "checkout",
+    "coupon",
+    "canvas",
+    "product",
+    "order",
+    "subscription",
+    "typescript",
+    "rest-api",
+    "laravel",
+    "nextjs",
+    "react"
   ],
   "author": "Pariette Inc.",
   "license": "MIT",
+  "homepage": "https://pariette.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/Pariette-Inc/pariette.sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pariette-Inc/pariette.sdk/issues"
   },
   "dependencies": {
     "axios": "^1.7.7"
@@ -45,5 +66,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "sideEffects": false
 }

@@ -11,9 +11,20 @@ export interface Product {
   currency?: string
   sku?: string
   barcode?: string
+  /** Opsiyonel stok adedi (null = stok yönetimi kapalı) */
+  stock?: number | null
+  /** @deprecated Kullan: stock */
   quantity?: number
+  /** @deprecated Kullan: stock (null = kapalı, number = açık) */
   track_inventory?: boolean
+  /** Ağırlık (kg, decimal) */
   weight?: number
+  /** Genişlik (cm, decimal) — desi hesaplama: (width × height × depth) / 3000 */
+  width?: number
+  /** Yükseklik (cm, decimal) */
+  height?: number
+  /** Derinlik (cm, decimal) */
+  depth?: number
   featured_image?: string
   environment_id: number
   user_id: number
@@ -91,9 +102,20 @@ export interface CreateProductRequest {
   currency?: string
   sku?: string
   barcode?: string
+  /** Opsiyonel stok adedi */
+  stock?: number
+  /** @deprecated Kullan: stock */
   quantity?: number
+  /** @deprecated Kullan: stock */
   track_inventory?: boolean
+  /** Ağırlık (kg) */
   weight?: number
+  /** Genişlik (cm) */
+  width?: number
+  /** Yükseklik (cm) */
+  height?: number
+  /** Derinlik (cm) */
+  depth?: number
   featured_image?: string
   vendor_id?: number
   brand_id?: number

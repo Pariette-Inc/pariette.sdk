@@ -34,6 +34,7 @@ export interface Order {
   carrier?: Carrier
   payment?: any
   refund?: Refund
+  refund_items?: RefundItem[]
   timelines?: OrderTimeline[]
   messages?: OrderMessage[]
 }
@@ -46,6 +47,7 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled'
   | 'refunded'
+  | 'partially_refunded'
 
 export interface OrderItem {
   product_id: number
@@ -133,6 +135,17 @@ export interface Refund {
   created_at: string
 }
 
+/** İade edilen ürün kalemi (kısmi iade) */
+export interface RefundItem {
+  id: number
+  refund_id: number
+  order_item_id?: number
+  product_id?: number
+  item_name?: string
+  quantity: number
+  amount: number
+}
+
 export interface OrderStats {
   total: number
   pending: number
@@ -142,6 +155,7 @@ export interface OrderStats {
   delivered: number
   cancelled: number
   refunded: number
+  partially_refunded: number
   revenue: {
     today: number
     month: number
@@ -162,6 +176,7 @@ export interface CheckoutRequest {
   billing_address_id?: number
   billing_address?: OrderAddress
   carrier_id?: number
+  coupon_code?: string
   customer_note?: string
   // Misafir sipariş
   guest_name?: string
@@ -180,8 +195,25 @@ export interface UpdateShippingRequest {
   tracking_number?: string
 }
 
+/**
+ * İade isteği.
+ *
+ * - **Tutar bazlı:** sadece `amount` gönder → tam iade
+ * - **Ürün bazlı (kısmi):** `items[]` gönder → kısmi iade, sipariş `partially_refunded` olur
+ */
 export interface RefundRequest {
+  /** Toplam iade tutarı (ürün bazlı iadelerde otomatik hesaplanır) */
   amount?: number
+  /** İade nedeni (müşteriye gösterilir) */
   reason?: string
+  /** Satıcı notu (dahili) */
   note?: string
+  /** Stok geri yüklensin mi? (varsayılan: false) */
+  restock_item?: boolean
+  /** Ürün bazlı iade kalemleri */
+  items?: {
+    product_id: number
+    quantity: number
+    amount: number
+  }[]
 }

@@ -82,6 +82,7 @@ export class Pariette {
     this.inventory     = new InventoryModule(this.client)
   }
 
+  /** JWT auth token set/clear */
   setAuthToken(token: string | null): void {
     this.client.setAuthToken(token)
   }
@@ -90,6 +91,30 @@ export class Pariette {
     return this.client.getAuthToken()
   }
 
+  /**
+   * ConsoleToken — environment'a özel panel işlemleri için.
+   * `orders`, `carriers`, `paymentGateways`, `coupons` gibi console modülleri için zorunludur.
+   *
+   * @example
+   *   pariette.setConsoleToken(environment.token)
+   *   await pariette.orders.list()
+   */
+  setConsoleToken(token: string | null): void {
+    this.client.setConsoleToken(token)
+  }
+
+  /**
+   * X-Guest-Id — misafir müşteri sepet işlemleri için session ID.
+   *
+   * @example
+   *   pariette.setGuestId(sessionStorage.getItem('pariette_guest_id'))
+   *   await pariette.cart.get()
+   */
+  setGuestId(guestId: string | null): void {
+    this.client.setGuestId(guestId)
+  }
+
+  /** API istek dili (tr | en | de | fr) */
   setLocale(locale: string): void {
     this.client.setLocale(locale)
   }
