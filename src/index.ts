@@ -96,3 +96,17 @@ export type {
   CollectionParams,
   ProductCollectionParams,
 } from './modules/collections'
+
+// Canvas types
+export type {
+  Canvas,
+  CanvasContent,
+  CanvasAttribute,
+  CanvasGallery,
+  CreateCanvasRequest,
+  UpdateCanvasRequest,
+  CreateCategoryRequest,
+  AddCanvasToCategoryRequest,
+  CanvasRelationRequest,
+  CanvasGalleryRequest,
+} from './types/canvas'
